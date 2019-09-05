@@ -543,3 +543,41 @@ def attenuated_signal_test(inp : Sequence[N],
     flag_arr[inp.mask] = QartodFlags.MISSING
 
     return flag_arr.reshape(original_shape)
+
+def gap_test(inp: Sequence[N],
+             tinp : Sequence[N],
+             threshold : N)->np.ma.core.MaskedArray:
+    """
+    Checks to ensure that recorded data arrive at the expected time interval
+    calculates the time difference and ensures that the difference in timestamps is the expected interval
+    
+    Args:
+    inp:  input data as a numeric numpy array or a list of numbers
+    tinp:  Time data as a numpy array of dtype "datetime64"
+    threshold:  a value that represents teh expected time between measurements
+    
+    Returns:
+    A masked array of flag values equal in size to inp
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        inp = np.ma.masked_invalid(np.array(inp).astype(np.floating))
+        
+    #save original shape
+    original_shape = inp.shape
+    inp = inp.flatten()
+    
+    #create original masked array, all with passing flags
+    flag_arr = np.ma.ones(inp.size,dtype='uint8')
+    
+    #find all the time gaps
+    gap = np.ma.zeros(inp.size,dtype - 'float')
+    gap[1:] = np.diff(tinp).astype(flaot)
+    
+    with np.errstate(invalid = 'ignore'):
+        flag_arr[gap != threshold] = QartodFlags.Fail
+        
+        #if missing value, mark flag as MISSING
+        flag_arr[inp.mask] = QartodFlags.MISSING
+        
+    return flag_arr.reshape(original_shape)
